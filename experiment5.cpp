@@ -1,51 +1,56 @@
 #include <iostream>
 using namespace std;
 
-#define V 5
+#define MAX 10
 #define INF 999
 
-int graph[V][V] = {
-    {0,2,0,6,0},
-    {2,0,3,8,5},
-    {0,3,0,0,7},
-    {6,8,0,0,9},
-    {0,5,7,9,0}
-};
+int graph[MAX][MAX];
+int parent[MAX];
+int cities;
 
-int parent[V];
-
-int find(int i)
+/* Add Route between Cities */
+void addRoute(int src, int dest, int weight)
 {
-    while(parent[i])
-        i = parent[i];
-    return i;
+    graph[src][dest] = weight;
+    graph[dest][src] = weight;
 }
 
-void uni(int i,int j)
+/* Display Graph */
+void displayGraph()
 {
-    if(i!=j)
-        parent[j]=i;
+    cout << "\nTransportation Network (Adjacency Matrix)\n";
+
+    for(int i=0;i<cities;i++)
+    {
+        for(int j=0;j<cities;j++)
+        {
+            cout << graph[i][j] << " ";
+        }
+        cout << endl;
+    }
 }
 
+/* ---------- Prim's Algorithm ---------- */
 void prims()
 {
-    int visited[V]={0};
+    int visited[MAX]={0};
     int edges=0;
     int min,x=0,y=0;
+    int cost=0;
 
     visited[0]=1;
 
-    cout<<"\nPrim's Minimum Spanning Tree:\n";
+    cout<<"\nMinimum Spanning Tree using Prim's Algorithm\n";
 
-    while(edges < V-1)
+    while(edges < cities-1)
     {
         min=INF;
 
-        for(int i=0;i<V;i++)
+        for(int i=0;i<cities;i++)
         {
             if(visited[i])
             {
-                for(int j=0;j<V;j++)
+                for(int j=0;j<cities;j++)
                 {
                     if(!visited[j] && graph[i][j])
                     {
@@ -60,57 +65,102 @@ void prims()
             }
         }
 
-        cout<<x<<" - "<<y<<" : "<<graph[x][y]<<endl;
+        cout<<"Route: "<<x<<" - "<<y<<"  Cost: "<<graph[x][y]<<endl;
+
+        cost += graph[x][y];
         visited[y]=1;
         edges++;
     }
+
+    cout<<"Total Cost = "<<cost<<endl;
+}
+
+/* ---------- Kruskal's Algorithm ---------- */
+
+int find(int i)
+{
+    while(parent[i])
+        i = parent[i];
+    return i;
+}
+
+void union_set(int i,int j)
+{
+    parent[j] = i;
 }
 
 void kruskal()
 {
-    int edges=0,a,b,u,v,min;
+    int min,a,b,u,v;
+    int edges=0;
+    int cost=0;
 
-    cout<<"\nKruskal's Minimum Spanning Tree:\n";
+    int temp[MAX][MAX];
 
-    int temp[V][V];
+    for(int i=0;i<cities;i++)
+        for(int j=0;j<cities;j++)
+            temp[i][j] = (graph[i][j]==0)?INF:graph[i][j];
 
-    for(int i=0;i<V;i++)
-        for(int j=0;j<V;j++)
-            temp[i][j]=graph[i][j]==0?INF:graph[i][j];
+    cout<<"\nMinimum Spanning Tree using Kruskal's Algorithm\n";
 
-    while(edges < V-1)
+    while(edges < cities-1)
     {
-        min=INF;
+        min = INF;
 
-        for(int i=0;i<V;i++)
+        for(int i=0;i<cities;i++)
         {
-            for(int j=0;j<V;j++)
+            for(int j=0;j<cities;j++)
             {
                 if(temp[i][j] < min)
                 {
-                    min=temp[i][j];
-                    a=u=i;
-                    b=v=j;
+                    min = temp[i][j];
+                    a = u = i;
+                    b = v = j;
                 }
             }
         }
 
-        u=find(u);
-        v=find(v);
+        u = find(u);
+        v = find(v);
 
-        if(u!=v)
+        if(u != v)
         {
-            cout<<a<<" - "<<b<<" : "<<min<<endl;
-            uni(u,v);
+            cout<<"Route: "<<a<<" - "<<b<<"  Cost: "<<min<<endl;
+            union_set(u,v);
+            cost += min;
             edges++;
         }
 
-        temp[a][b]=temp[b][a]=INF;
+        temp[a][b] = temp[b][a] = INF;
     }
+
+    cout<<"Total Cost = "<<cost<<endl;
 }
+
+/* ---------- Main ---------- */
 
 int main()
 {
+    cities = 5;
+
+    for(int i=0;i<MAX;i++)
+        for(int j=0;j<MAX;j++)
+            graph[i][j]=0;
+
+    /* Transportation Routes */
+
+    addRoute(0,1,2);
+    addRoute(0,3,6);
+    addRoute(1,2,3);
+    addRoute(1,3,8);
+    addRoute(1,4,5);
+    addRoute(2,4,7);
+    addRoute(3,4,9);
+
+    displayGraph();
+
     prims();
     kruskal();
+
+    return 0;
 }
